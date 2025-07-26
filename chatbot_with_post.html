@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puter AI 챗봇 - 게시글 답변 생성기</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .tab.active {
+            background: white;
+            border-bottom: 3px solid #007bff;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-content {
+            background: #007bff;
+            color: white;
+        }
+        
+        .message.ai .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e9ecef;
+        }
+        
+        .post-input-area {
+            margin-bottom: 20px;
+        }
+        
+        .post-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .post-textarea:focus {
+            border-color: #007bff;
+        }
+        
+        .post-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .post-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        
+        .post-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .post-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .input-field:focus {
+            border-color: #007bff;
+        }
+        
+        .send-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        
+        .send-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .image-area {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .image-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .image-preview img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .image-btn {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .clear-btn {
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .clear-chat-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .response-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .action-btn:hover {
+            background: #138496;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Puter AI 챗봇 - 게시글 답변 생성기</h1>
+            <button class="clear-chat-btn" onclick="clearChat()">대화 초기화</button>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('chat')">💬 일반 채팅</button>
+            <button class="tab" onclick="switchTab('post')">📝 게시글 답변 생성</button>
+        </div>
+        
+        <!-- 일반 채팅 탭 -->
+        <div id="chat-tab" class="tab-content active">
+            <div class="chat-container" id="chatContainer">
+                <div class="message ai">
+                    <div class="message-content">
+                        안녕하세요! 무엇을 도와드릴까요? 🤖
+                    </div>
+                </div>
+            </div>
+            
+            <div class="image-area" id="imageArea" style="display: none;">
+                <div class="image-preview">
+                    <img id="imagePreview" src="" alt="이미지 미리보기">
+                    <span id="imageName"></span>
+                    <button class="clear-btn" onclick="clearImage()">이미지 제거</button>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <div class="input-group">
+                    <input type="text" id="messageInput" class="input-field" placeholder="질문을 입력하세요..." onkeypress="handleKeyPress(event)">
+                    <button class="image-btn" onclick="attachImage()">📷 이미지</button>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+                    <button id="sendBtn" class="send-btn" onclick="sendMessage()">전송</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 게시글 답변 생성 탭 -->
+        <div id="post-tab" class="tab-content">
+            <div class="post-input-area">
+                <textarea id="postTextarea" class="post-textarea" placeholder="게시글을 여기에 복사붙여넣기 하세요..."></textarea>
+                <div class="post-controls">
+                    <button id="generateBtn" class="post-btn" onclick="generateResponse()">🤖 답변 생성</button>
+                    <button class="post-btn" onclick="clearPost()">🗑️ 지우기</button>
+                </div>
+            </div>
+            
+            <div class="chat-container" id="postChatContainer">
+                <div class="message ai">
+                    <div class="message-content">
+                        게시글을 입력하고 "답변 생성" 버튼을 클릭하세요! 📝
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        let selectedImage = null;
+        let isWaiting = false;
+        let currentTab = 'chat';
+
+        function switchTab(tabName) {
+            // 탭 버튼 상태 변경
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            // 탭 내용 변경
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            currentTab = tabName;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !isWaiting) {
+                if (currentTab === 'chat') {
+                    sendMessage();
+                }
+            }
+        }
+
+        function attachImage() {
+            document.getElementById('imageInput').click();
+        }
+
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedImage = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imageName').textContent = file.name;
+                    document.getElementById('imageArea').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearImage() {
+            selectedImage = null;
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imageArea').style.display = 'none';
+        }
+
+        function addMessage(content, isUser = false, containerId = 'chatContainer') {
+            const chatContainer = document.getElementById(containerId);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content;
+            
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            if (isWaiting) return;
+            
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 사용자 메시지 추가
+            addMessage(message, true);
+            
+            // 입력 필드 초기화
+            input.value = '';
+            
+            // 로딩 상태 시작
+            isWaiting = true;
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading"></span> 응답 대기 중...';
+            
+            try {
+                let response;
+                
+                if (selectedImage) {
+                    // 이미지가 있는 경우
+                    const imageUrl = await uploadImage(selectedImage);
+                    response = await puter.ai.chat(message, imageUrl, {model: 'claude-sonnet-4'});
+                } else {
+                    // 텍스트만 있는 경우
+                    response = await puter.ai.chat(message, {model: 'claude-sonnet-4'});
+                }
+                
+                // AI 응답 추가
+                const aiResponse = response.message.content[0].text;
+                addMessage(aiResponse, false);
+                
+            } catch (error) {
+                console.error('오류:', error);
+                addMessage(`❌ 오류가 발생했습니다: ${error.message}`, false);
+            } finally {
+                // 로딩 상태 종료
+                isWaiting = false;
+                sendBtn.disabled = false;
+                sendBtn.textContent = '전송';
+            }
+        }
+
+        async function generateResponse() {
+            if (isWaiting) return;
+            
+            const textarea = document.getElementById('postTextarea');
+            const postContent = textarea.value.trim();
+            
+            if (!postContent) {
+                alert('게시글을 입력해주세요!');
+                return;
+            }
+            
+            // 게시글 내용 추가
+            addMessage(`<strong>게시글:</strong><br>${postContent}`, true, 'postChatContainer');
+            
+            // 로딩 상태 시작
+            isWaiting = true;
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="loading"></span> 답변 생성 중...';
+            
+            try {
+                // 게시글에 대한 답변 생성 프롬프트
+                const prompt = `다음 게시글에 대한 적절한 답변을 생성해주세요. 친근하고 도움이 되는 답변으로 작성해주세요:
+
+게시글:
+${postContent}
+
+답변:`;
+                
+                const response = await puter.ai.chat(prompt, {model: 'claude-sonnet-4'});
+                
+                // AI 응답 추가
+                const aiResponse = response.message.content[0].text;
+                addMessage(`<strong>AI 답변:</strong><br>${aiResponse}`, false, 'postChatContainer');
+                
+                // 답변 액션 버튼 추가
+                addResponseActions(aiResponse);
+                
+            } catch (error) {
+                console.error('오류:', error);
+                addMessage(`❌ 오류가 발생했습니다: ${error.message}`, false, 'postChatContainer');
+            } finally {
+                // 로딩 상태 종료
+                isWaiting = false;
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🤖 답변 생성';
+            }
+        }
+
+        function addResponseActions(response) {
+            const chatContainer = document.getElementById('postChatContainer');
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'response-actions';
+            actionsDiv.innerHTML = `
+                <button class="action-btn" onclick="copyToClipboard('${response.replace(/'/g, "\\'")}')">📋 복사</button>
+                <button class="action-btn" onclick="regenerateResponse()">🔄 다시 생성</button>
+            `;
+            chatContainer.appendChild(actionsDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('답변이 클립보드에 복사되었습니다!');
+            }).catch(err => {
+                console.error('복사 실패:', err);
+                alert('복사에 실패했습니다.');
+            });
+        }
+
+        function regenerateResponse() {
+            // 마지막 AI 메시지와 액션 버튼 제거
+            const chatContainer = document.getElementById('postChatContainer');
+            const messages = chatContainer.querySelectorAll('.message');
+            const lastMessage = messages[messages.length - 1];
+            const actionsDiv = chatContainer.querySelector('.response-actions');
+            
+            if (lastMessage && lastMessage.querySelector('.message-content').innerHTML.includes('AI 답변:')) {
+                lastMessage.remove();
+            }
+            if (actionsDiv) {
+                actionsDiv.remove();
+            }
+            
+            // 다시 답변 생성
+            generateResponse();
+        }
+
+        function clearPost() {
+            document.getElementById('postTextarea').value = '';
+        }
+
+        async function uploadImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    resolve(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function clearChat() {
+            const chatContainer = document.getElementById('chatContainer');
+            const postChatContainer = document.getElementById('postChatContainer');
+            
+            chatContainer.innerHTML = `
+                <div class="message ai">
+                    <div class="message-content">
+                        안녕하세요! 무엇을 도와드릴까요? 🤖
+                    </div>
+                </div>
+            `;
+            
+            postChatContainer.innerHTML = `
+                <div class="message ai">
+                    <div class="message-content">
+                        게시글을 입력하고 "답변 생성" 버튼을 클릭하세요! 📝
+                    </div>
+                </div>
+            `;
+            
+            clearImage();
+            clearPost();
+        }
+    </script>
+</body>
+</html>

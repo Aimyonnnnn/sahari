@@ -1,0 +1,12 @@
+{
+  "name": "puter-ai-api",
+  "description": "Puter AI API 서버",
+  "language": "python",
+  "framework": "flask",
+  "buildCommand": "pip install -r requirements_cloudtype.txt",
+  "startCommand": "python cloudtype_app.py",
+  "port": 8080,
+  "env": {
+    "FLASK_ENV": "production"
+  }
+} 

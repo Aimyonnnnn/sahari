@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Puter AI 챗봇</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .chat-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background: #007bff;
+            color: white;
+            text-align: right;
+        }
+        .ai-message {
+            background: #e9ecef;
+            color: #333;
+        }
+        .input-area {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #ccc;
+        }
+        .image-area {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            display: none;
+        }
+        .image-preview {
+            max-width: 100px;
+            max-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>🤖 Puter AI 챗봇</h1>
+        
+        <div id="chatHistory">
+            <div class="message ai-message">
+                안녕하세요! 무엇을 도와드릴까요?
+            </div>
+        </div>
+        
+        <div class="image-area" id="imageArea">
+            <img id="imagePreview" class="image-preview">
+            <button onclick="clearImage()">이미지 제거</button>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="질문을 입력하세요..." onkeypress="handleKeyPress(event)">
+            <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(event)">
+            <button onclick="attachImage()">📷</button>
+            <button id="sendBtn" onclick="sendMessage()">전송</button>
+        </div>
+    </div>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        let selectedImage = null;
+        let isWaiting = false;
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !isWaiting) {
+                sendMessage();
+            }
+        }
+
+        function attachImage() {
+            document.getElementById('imageInput').click();
+        }
+
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedImage = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imageArea').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearImage() {
+            selectedImage = null;
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imageArea').style.display = 'none';
+        }
+
+        function addMessage(content, isUser = false) {
+            const chatHistory = document.getElementById('chatHistory');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            messageDiv.textContent = content;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        async function sendMessage() {
+            if (isWaiting) return;
+            
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 사용자 메시지 추가
+            addMessage(message, true);
+            
+            // 입력 필드 초기화
+            input.value = '';
+            
+            // 로딩 상태 시작
+            isWaiting = true;
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = '응답 대기 중...';
+            
+            try {
+                let response;
+                
+                if (selectedImage) {
+                    // 이미지가 있는 경우
+                    const imageUrl = await uploadImage(selectedImage);
+                    response = await puter.ai.chat(message, imageUrl, {model: 'claude-sonnet-4'});
+                } else {
+                    // 텍스트만 있는 경우
+                    response = await puter.ai.chat(message, {model: 'claude-sonnet-4'});
+                }
+                
+                // AI 응답 추가
+                const aiResponse = response.message.content[0].text;
+                addMessage(aiResponse, false);
+                
+            } catch (error) {
+                console.error('오류:', error);
+                addMessage(`오류: ${error.message}`, false);
+            } finally {
+                // 로딩 상태 종료
+                isWaiting = false;
+                sendBtn.disabled = false;
+                sendBtn.textContent = '전송';
+            }
+        }
+
+        async function uploadImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    resolve(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    </script>
+</body>
+</html>

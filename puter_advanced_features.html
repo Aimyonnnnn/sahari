@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puter AI 고급 기능 데모</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .feature-section {
+            margin-bottom: 20px;
+        }
+        
+        .feature-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5a6fd8;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        
+        .output {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- AI 채팅 기능 -->
+        <div class="card">
+            <h2>🤖 AI 채팅 기능</h2>
+            
+            <div class="feature-section">
+                <h3>기본 채팅</h3>
+                <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." />
+                <select id="chat-model">
+                    <option value="claude-sonnet-4">Claude Sonnet 4</option>
+                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                    <option value="claude-3-opus">Claude 3 Opus</option>
+                    <option value="gpt-4">GPT-4</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                </select>
+                <button onclick="sendChat()">채팅 전송</button>
+                <div id="chat-output" class="output"></div>
+            </div>
+            
+            <div class="feature-section">
+                <h3>시스템 프롬프트 설정</h3>
+                <textarea id="system-prompt" placeholder="시스템 프롬프트를 입력하세요..." rows="3">당신은 도움이 되는 AI 어시스턴트입니다.</textarea>
+                <button onclick="setSystemPrompt()">시스템 프롬프트 설정</button>
+            </div>
+        </div>
+
+        <!-- 파일 시스템 기능 -->
+        <div class="card">
+            <h2>📁 파일 시스템 기능</h2>
+            
+            <div class="feature-section">
+                <h3>파일 읽기/쓰기</h3>
+                <input type="text" id="file-path" placeholder="파일 경로 (예: /test.txt)" />
+                <textarea id="file-content" placeholder="파일 내용" rows="4"></textarea>
+                <button onclick="writeFile()">파일 쓰기</button>
+                <button onclick="readFile()">파일 읽기</button>
+                <div id="file-output" class="output"></div>
+            </div>
+            
+            <div class="feature-section">
+                <h3>디렉토리 탐색</h3>
+                <input type="text" id="dir-path" placeholder="디렉토리 경로 (예: /)" value="/" />
+                <button onclick="listDirectory()">디렉토리 목록</button>
+                <div id="dir-output" class="output"></div>
+            </div>
+        </div>
+
+        <!-- UI 기능 -->
+        <div class="card">
+            <h2>🎨 UI 기능</h2>
+            
+            <div class="feature-section">
+                <h3>알림 표시</h3>
+                <input type="text" id="notification-text" placeholder="알림 메시지" value="테스트 알림입니다!" />
+                <select id="notification-type">
+                    <option value="info">정보</option>
+                    <option value="success">성공</option>
+                    <option value="warning">경고</option>
+                    <option value="error">오류</option>
+                </select>
+                <button onclick="showNotification()">알림 표시</button>
+            </div>
+            
+            <div class="feature-section">
+                <h3>모달 다이얼로그</h3>
+                <input type="text" id="modal-title" placeholder="모달 제목" value="테스트 모달" />
+                <textarea id="modal-content" placeholder="모달 내용" rows="3">이것은 테스트 모달입니다.</textarea>
+                <button onclick="showModal()">모달 표시</button>
+            </div>
+            
+            <div class="feature-section">
+                <h3>프로그레스 바</h3>
+                <input type="number" id="progress-value" placeholder="진행률 (0-100)" value="50" min="0" max="100" />
+                <button onclick="showProgress()">프로그레스 표시</button>
+            </div>
+        </div>
+
+        <!-- 인증 및 설정 -->
+        <div class="card">
+            <h2>🔐 인증 및 설정</h2>
+            
+            <div class="feature-section">
+                <h3>인증 상태 확인</h3>
+                <button onclick="checkAuth()">인증 상태 확인</button>
+                <div id="auth-output" class="output"></div>
+            </div>
+            
+            <div class="feature-section">
+                <h3>환경 정보</h3>
+                <button onclick="getEnvironment()">환경 정보 가져오기</button>
+                <div id="env-output" class="output"></div>
+            </div>
+            
+            <div class="feature-section">
+                <h3>로그 출력</h3>
+                <input type="text" id="log-message" placeholder="로그 메시지" value="테스트 로그" />
+                <select id="log-level">
+                    <option value="info">정보</option>
+                    <option value="warn">경고</option>
+                    <option value="error">오류</option>
+                </select>
+                <button onclick="logMessage()">로그 출력</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        // 상태 표시 함수
+        function showStatus(message, type = 'info') {
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            document.body.appendChild(status);
+            setTimeout(() => status.remove(), 3000);
+        }
+
+        // AI 채팅 기능
+        async function sendChat() {
+            const input = document.getElementById('chat-input');
+            const model = document.getElementById('chat-model');
+            const output = document.getElementById('chat-output');
+            
+            const message = input.value.trim();
+            if (!message) return;
+            
+            output.textContent = '응답을 기다리는 중...';
+            
+            try {
+                const response = await puter.ai.chat(message, {
+                    model: model.value
+                });
+                
+                if (response && response.message && response.message.content) {
+                    output.textContent = response.message.content[0].text;
+                    showStatus('채팅 성공!', 'success');
+                } else {
+                    output.textContent = '응답을 받지 못했습니다.';
+                    showStatus('응답 오류', 'error');
+                }
+            } catch (error) {
+                output.textContent = `오류: ${error.message}`;
+                showStatus('채팅 오류', 'error');
+            }
+        }
+
+        // 시스템 프롬프트 설정
+        function setSystemPrompt() {
+            const prompt = document.getElementById('system-prompt').value;
+            // Puter AI API에서 시스템 프롬프트 설정 방법은 문서를 확인해야 함
+            showStatus('시스템 프롬프트 설정 기능은 API 문서를 확인해주세요.', 'info');
+        }
+
+        // 파일 시스템 기능
+        async function writeFile() {
+            const path = document.getElementById('file-path').value;
+            const content = document.getElementById('file-content').value;
+            const output = document.getElementById('file-output');
+            
+            if (!path || !content) {
+                showStatus('경로와 내용을 입력해주세요.', 'error');
+                return;
+            }
+            
+            try {
+                await puter.fs.write(path, content);
+                output.textContent = `파일이 성공적으로 작성되었습니다: ${path}`;
+                showStatus('파일 쓰기 성공!', 'success');
+            } catch (error) {
+                output.textContent = `파일 쓰기 오류: ${error.message}`;
+                showStatus('파일 쓰기 오류', 'error');
+            }
+        }
+
+        async function readFile() {
+            const path = document.getElementById('file-path').value;
+            const output = document.getElementById('file-output');
+            
+            if (!path) {
+                showStatus('파일 경로를 입력해주세요.', 'error');
+                return;
+            }
+            
+            try {
+                const content = await puter.fs.read(path);
+                output.textContent = content;
+                showStatus('파일 읽기 성공!', 'success');
+            } catch (error) {
+                output.textContent = `파일 읽기 오류: ${error.message}`;
+                showStatus('파일 읽기 오류', 'error');
+            }
+        }
+
+        async function listDirectory() {
+            const path = document.getElementById('dir-path').value;
+            const output = document.getElementById('dir-output');
+            
+            try {
+                const items = await puter.fs.readdir(path);
+                output.textContent = JSON.stringify(items, null, 2);
+                showStatus('디렉토리 목록 성공!', 'success');
+            } catch (error) {
+                output.textContent = `디렉토리 읽기 오류: ${error.message}`;
+                showStatus('디렉토리 읽기 오류', 'error');
+            }
+        }
+
+        // UI 기능
+        function showNotification() {
+            const text = document.getElementById('notification-text').value;
+            const type = document.getElementById('notification-type').value;
+            
+            try {
+                puter.ui.notify(text, { type });
+                showStatus('알림 표시 성공!', 'success');
+            } catch (error) {
+                showStatus('알림 표시 오류', 'error');
+            }
+        }
+
+        function showModal() {
+            const title = document.getElementById('modal-title').value;
+            const content = document.getElementById('modal-content').value;
+            
+            try {
+                puter.ui.modal({
+                    title,
+                    content,
+                    buttons: [
+                        { text: '확인', action: 'close' }
+                    ]
+                });
+                showStatus('모달 표시 성공!', 'success');
+            } catch (error) {
+                showStatus('모달 표시 오류', 'error');
+            }
+        }
+
+        function showProgress() {
+            const value = document.getElementById('progress-value').value;
+            
+            try {
+                puter.ui.progress({
+                    value: parseInt(value),
+                    max: 100,
+                    text: `${value}% 완료`
+                });
+                showStatus('프로그레스 표시 성공!', 'success');
+            } catch (error) {
+                showStatus('프로그레스 표시 오류', 'error');
+            }
+        }
+
+        // 인증 및 설정
+        async function checkAuth() {
+            const output = document.getElementById('auth-output');
+            
+            try {
+                const authState = puter.auth.state;
+                output.textContent = JSON.stringify(authState, null, 2);
+                showStatus('인증 상태 확인 성공!', 'success');
+            } catch (error) {
+                output.textContent = `인증 상태 확인 오류: ${error.message}`;
+                showStatus('인증 상태 확인 오류', 'error');
+            }
+        }
+
+        function getEnvironment() {
+            const output = document.getElementById('env-output');
+            
+            try {
+                const env = puter.env;
+                output.textContent = JSON.stringify(env, null, 2);
+                showStatus('환경 정보 가져오기 성공!', 'success');
+            } catch (error) {
+                output.textContent = `환경 정보 가져오기 오류: ${error.message}`;
+                showStatus('환경 정보 가져오기 오류', 'error');
+            }
+        }
+
+        function logMessage() {
+            const message = document.getElementById('log-message').value;
+            const level = document.getElementById('log-level').value;
+            
+            try {
+                puter.print(`[${level.toUpperCase()}] ${message}`);
+                showStatus('로그 출력 성공!', 'success');
+            } catch (error) {
+                showStatus('로그 출력 오류', 'error');
+            }
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('Puter AI API 고급 기능 데모가 로드되었습니다!', 'info');
+        });
+    </script>
+</body>
+</html> 
