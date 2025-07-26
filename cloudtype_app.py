@@ -288,21 +288,54 @@ class PuterAIServer:
             응답 결과
         """
         try:
-            # 실제 Puter API 호출 (예시)
-            # 실제 구현에서는 Puter의 공식 API를 사용해야 합니다
-            payload = {
-                "message": message,
-                "model": model
-            }
+            # 시스템 프롬프트에 따른 응답 생성
+            if system_prompt and "댓글" in system_prompt:
+                # 댓글 생성 모드
+                responses = [
+                    "좋은 글이네요! 👍",
+                    "정말 유익한 정보 감사합니다 😊",
+                    "와! 대단하네요 👏",
+                    "흥미로운 내용이에요!",
+                    "도움이 많이 되었어요 💕",
+                    "정말 잘 정리해주셨네요!",
+                    "감사합니다! 좋은 정보였어요",
+                    "와우! 놀라워요 😮",
+                    "정말 멋진 글이에요 ✨",
+                    "추천합니다! 👍"
+                ]
+                
+                import random
+                response = random.choice(responses)
+                
+                # 본문 내용에 따른 맞춤 응답
+                if "날씨" in message:
+                    response = "날씨가 정말 좋네요! 😊"
+                elif "음식" in message or "맛" in message:
+                    response = "맛있겠어요! 🤤"
+                elif "여행" in message:
+                    response = "여행 재미있겠어요! ✈️"
+                elif "공부" in message or "학습" in message:
+                    response = "열심히 공부하세요! 📚"
+                elif "운동" in message or "운동" in message:
+                    response = "건강한 하루 되세요! 💪"
+                elif "고민" in message or "힘들" in message:
+                    response = "힘내세요! 응원할게요 💪"
+                elif "축하" in message or "생일" in message:
+                    response = "축하드려요! 🎉"
+                elif "감사" in message:
+                    response = "천만에요! 😊"
+                elif "?" in message or "?" in message:
+                    response = "좋은 질문이네요! 🤔"
+                else:
+                    response = random.choice(responses)
+                    
+            else:
+                # 일반 채팅 모드
+                response = f"안녕하세요! '{message}'에 대한 답변입니다. 현재는 시뮬레이션 모드로 작동하고 있습니다."
             
-            if system_prompt:
-                payload["system_prompt"] = system_prompt
-            
-            # 여기서는 시뮬레이션 응답을 반환
-            # 실제로는 requests.post()를 사용하여 API 호출
             return {
                 "success": True,
-                "response": f"시뮬레이션 응답: {message}에 대한 AI 답변입니다.",
+                "response": response,
                 "model": model,
                 "timestamp": datetime.now().isoformat()
             }
